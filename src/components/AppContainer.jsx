@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { addItem, editItem, deleteItem } from './actions';
 
@@ -6,29 +6,51 @@ function AppContainer() {
   const items = useSelector((state) => state.items);
   const editingItemId = useSelector((state) => state.editingItem);
   const dispatch = useDispatch();
-  const [name, setName] = useState('');
-  const [cost, setCost] = useState('');
-
-  useEffect(() => {
-    console.log('Items updated:', items);
-  }, [items]);
+  const [editingItemData, setEditingItemData] = useState(null); // Здесь храним данные для редактирования
+  const [nameInput, setNameInput] = useState(''); // Здесь храним вводимое имя
+  const [costInput, setCostInput] = useState(''); // Здесь храним вводимую стоимость
 
   const handleAddItem = () => {
-    if (name && cost) {
-      dispatch(addItem(name, Number(cost)));
-      setName('');
-      setCost('');
+    if (nameInput && costInput) {
+      dispatch(addItem(nameInput, Number(costInput)));
+      setNameInput('');
+      setCostInput('');
     }
   };
 
   const handleEditItem = (id) => {
     const editedItem = items.find((item) => item.id === id);
     if (editedItem) {
-      setName(editedItem.name);
-      setCost(editedItem.cost);
-      dispatch(editItem(id, name, Number(cost)));
+      setEditingItemData(editedItem);
+      setNameInput(editedItem.name);
+      setCostInput(editedItem.cost.toString());
+      dispatch({ type: 'SET_EDITING_ITEM', payload: editedItem.id }); // Установите правильный id
     }
   };
+  
+  
+
+  const handleSaveEdit = () => {
+    if (editingItemData && nameInput && costInput) {
+      // Создайте объект с обновленными данными
+      const updatedItem = {
+        id: editingItemData.id,
+        name: nameInput,
+        cost: Number(costInput),
+      };
+  
+      // Отправьте действие для обновления элемента
+      dispatch({ type: 'UPDATE_ITEM', payload: updatedItem });
+  
+      // Сбросьте данные для редактирования
+      setEditingItemData(null);
+      setNameInput('');
+      setCostInput('');
+    }
+  };
+  
+  
+  
 
   const handleDeleteItem = (id) => {
     dispatch(deleteItem(id));
@@ -40,7 +62,7 @@ function AppContainer() {
       <ul>
         {items.map((item) => (
           <li key={item.id}>
-            {item.name} {item.cost}
+            {item.name} - {item.cost}
             <button onClick={() => handleEditItem(item.id)}>Редактировать</button>
             <button onClick={() => handleDeleteItem(item.id)}>Удалить</button>
           </li>
@@ -52,14 +74,14 @@ function AppContainer() {
           <input
             type="text"
             placeholder="Наименование"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            value={nameInput}
+            onChange={(e) => setNameInput(e.target.value)}
           />
           <input
             type="number"
             placeholder="Стоимость"
-            value={cost}
-            onChange={(e) => setCost(e.target.value)}
+            value={costInput}
+            onChange={(e) => setCostInput(e.target.value)}
           />
           <button onClick={handleAddItem}>Сохранить</button>
         </div>
@@ -69,17 +91,17 @@ function AppContainer() {
           <input
             type="text"
             placeholder="Наименование"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            value={nameInput}
+            onChange={(e) => setNameInput(e.target.value)}
           />
           <input
             type="number"
             placeholder="Стоимость"
-            value={cost}
-            onChange={(e) => setCost(e.target.value)}
+            value={costInput}
+            onChange={(e) => setCostInput(e.target.value)}
           />
-          <button onClick={() => handleEditItem(editingItemId)}>Сохранить</button>
-          <button onClick={() => setName('')}>Отмена</button>
+          <button onClick={handleSaveEdit}>Сохранить</button>
+          <button onClick={() => setEditingItemData(null)}>Отмена</button>
         </div>
       )}
     </div>

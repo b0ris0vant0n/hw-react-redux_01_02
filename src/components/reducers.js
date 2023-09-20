@@ -2,7 +2,7 @@ const itemsReducer = (state = [], action) => {
   switch (action.type) {
     case 'ADD_ITEM':
       return [...state, { id: Date.now(), ...action.payload }];
-    case 'EDIT_ITEM':
+    case 'UPDATE_ITEM':
       return state.map((item) =>
         item.id === action.payload.id ? { ...item, ...action.payload } : item
       );
@@ -12,11 +12,10 @@ const itemsReducer = (state = [], action) => {
       return state;
   }
 };
-
 const editingItemReducer = (state = null, action) => {
   switch (action.type) {
-    case 'EDIT_ITEM':
-      return action.payload.id;
+    case 'SET_EDITING_ITEM': // Обновим обработку действия
+      return action.payload;
     case 'ADD_ITEM':
     case 'DELETE_ITEM':
       return null;
@@ -24,5 +23,6 @@ const editingItemReducer = (state = null, action) => {
       return state;
   }
 };
+
 
 export { itemsReducer, editingItemReducer };
